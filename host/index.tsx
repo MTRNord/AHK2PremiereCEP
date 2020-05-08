@@ -4,6 +4,7 @@
 /// <reference path="../typings/XMPScript.d.ts"/>
 /// <reference path="../typings/extendscript.d.ts"/>
 /// <reference path="../typings/global.d.ts"/>
+import i18next from 'i18next';
 
 declare interface Track {
   overwriteClip(clipProjectItem: ProjectItem, time: Time): void;
@@ -207,7 +208,7 @@ class MarkerUtils {
         parseInt(currentPlayheadPosition) < parseInt(endTicks)
       ) {
         return clip;
-      } 
+      }
     }
   }
   static deselectAll(): void {
@@ -280,7 +281,7 @@ class Utils {
     this.targetAllTracks(false);
 
     const currentSequence = app.project.activeSequence;
-    
+
     if(currentSequence.videoTracks.numTracks > videoTrack) {
       currentSequence.videoTracks[videoTrack].setTargeted(true, true);
     }
@@ -327,12 +328,12 @@ class EffectUtils {
     var effect = qe.project.getVideoEffectByName(effectName);
     qeClip.addVideoEffect(effect);
 
-    // For better usability, always return the newest effects (this ones) properties! 
+    // For better usability, always return the newest effects (this ones) properties!
     return clipInfo.clip.components[2].properties;
   }
 
-  static applyDropShadowPreset() {
-    const shadowEffectProperties = this.applyEffectOnFirstSelectedVideoClip("Schlagschatten");
+  static applyDropShadowPreset(t: any) {
+    const shadowEffectProperties = this.applyEffectOnFirstSelectedVideoClip(t("dropshadow"));
     const opacity = shadowEffectProperties[1];
     const softness = shadowEffectProperties[4];
 
@@ -439,8 +440,8 @@ const host = {
    *      get:
    *          description: Applies the custom tweaked drop shadow effect on the first currently selected clip.
    */
-  applyDropShadowPreset: function() {
-    EffectUtils.applyDropShadowPreset();
+  applyDropShadowPreset: function(translate: any) {
+    EffectUtils.applyDropShadowPreset(translate);
   },
 
   /**

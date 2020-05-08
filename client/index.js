@@ -3,6 +3,8 @@ const csInterface = new CSInterface();
 const loc = window.location.pathname;
 const dir = decodeURI(loc.substring(1, loc.lastIndexOf('/')));
 const express = require(dir + "/node_modules/express/index.js");
+const i18next = require(dir + "/node_modules/i18next/dist/cjs/i18next.js");
+const i18nextMiddleware = require(dir + "/node_modules/i18next-http-middleware/cjs/index.js");
 
 // Swagger documentation, based on: http://www.acuriousanimal.com/2018/10/20/express-swagger-doc.html
 const swaggerJsDoc = require(dir + "/node_modules/swagger-jsdoc/index.js");
@@ -24,9 +26,29 @@ const specs = swaggerJsDoc(options);
 
 function init() {
 
+    // prepare languages
+    i18next.use(i18nextMiddleware.LanguageDetector).init({
+        // debug: true,
+        backend: {
+            // eslint-disable-next-line no-path-concat
+            loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json',
+            // eslint-disable-next-line no-path-concat
+            addPath: __dirname + '/locales/{{lng}}/{{ns}}.missing.json'
+        },
+        fallbackLng: 'en',
+        preload: ['en', 'de']
+    })
+
     // Setup server
     const app = express();
     const router = express.Router();
+
+    // Setup i18NextMiddleware
+    app.use(
+        i18nextMiddleware.handle(i18next, {
+            ignoreRoutes: ["/api-docs"]
+        })
+    );
 
     // Setup swagger endpoint
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
@@ -58,6 +80,11 @@ function init() {
                     }
                 }
 
+                // Allow translations
+                if (["applyDropShadowPreset"].indexOf(key) > -1) {
+                    propertyCount++;
+                }
+
                 // Extract request query parameters
                 let params = [];
                 for (const id in parameters) {
@@ -65,8 +92,21 @@ function init() {
                     if (req.query.hasOwnProperty(propName)) {
                         params.push(req.query[propName]);
                     } else {
-                        console.log("Param not found: '" + propName + "'");
+                        if (propName !== "translate") {
+                            console.log("Param not found: '" + propName + "'");
+                        }
                     }
+                }
+
+                // Add dummy parameter
+                if (!(parameters.indexOf("translate") > -1)) {
+                    parameters.push("translate");
+                }
+
+                // Allow translation
+                if (["applyDropShadowPreset"].indexOf(key) > -1) {
+                    const translateFunc = req.t;
+                    params.push(translateFunc);
                 }
 
                 // Check query parameter count
