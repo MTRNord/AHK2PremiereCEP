@@ -270,11 +270,11 @@ var EffectUtils = /** @class */ (function () {
         var qeClip = Utils.getQEVideoClip(clipInfo.trackIndex, clipInfo.clipIndex);
         var effect = qe.project.getVideoEffectByName(effectName);
         qeClip.addVideoEffect(effect);
-        // For better usability, always return the newest effects (this ones) properties! 
+        // For better usability, always return the newest effects (this ones) properties!
         return clipInfo.clip.components[2].properties;
     };
-    EffectUtils.applyDropShadowPreset = function () {
-        var shadowEffectProperties = this.applyEffectOnFirstSelectedVideoClip("Schlagschatten");
+    EffectUtils.applyDropShadowPreset = function (t) {
+        var shadowEffectProperties = this.applyEffectOnFirstSelectedVideoClip(t("dropshadow"));
         var opacity = shadowEffectProperties[1];
         var softness = shadowEffectProperties[4];
         opacity.setValue(255, true);
@@ -371,8 +371,8 @@ var host = {
      *      get:
      *          description: Applies the custom tweaked drop shadow effect on the first currently selected clip.
      */
-    applyDropShadowPreset: function () {
-        EffectUtils.applyDropShadowPreset();
+    applyDropShadowPreset: function (translate) {
+        EffectUtils.applyDropShadowPreset(translate);
     },
     /**
      * @swagger

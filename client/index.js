@@ -50,11 +50,8 @@ function init() {
     const router = express.Router();
 
     // Setup i18NextMiddleware
-    app.use(
-        i18nextMiddleware.handle(i18next, {
-            ignoreRoutes: ["/api-docs"]
-        })
-    );
+    app.use(i18nextMiddleware.handle(i18next));
+    router.use(i18nextMiddleware.handle(i18next));
 
     // Setup swagger endpoint
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
@@ -85,9 +82,7 @@ function init() {
                         propertyCount++;
                     }
                 }
-
-                // Allow translations
-                if (["applyDropShadowPreset"].indexOf(key) > -1) {
+                if (parameters.indexOf("translate") > -1) {
                     propertyCount++;
                 }
 
@@ -104,13 +99,9 @@ function init() {
                     }
                 }
 
-                // Add dummy parameter
-                if (!(parameters.indexOf("translate") > -1) && (["applyDropShadowPreset"].indexOf(key) > -1)) {
-                    parameters.push("translate");
-                }
 
                 // Allow translation
-                if (["applyDropShadowPreset"].indexOf(key) > -1) {
+                if (parameters.indexOf("translate") > -1) {
                     const translateFunc = req.t;
                     params.push(translateFunc);
                 }
@@ -157,7 +148,12 @@ function executeCommand(command, params, res) {
 
     command += "(";
     for (let i = 0; i < params.length; i++) {
-        command += '"' + params[i] + '"';
+        if (!(params[i].toString().indexOf("function") !== -1)) {
+            command += '"' + params[i] + '"';
+        } else {
+            command += params[i];
+        }
+
 
         if (i < (params.length - 1)) {
             command += ", ";

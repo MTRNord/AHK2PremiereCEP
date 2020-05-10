@@ -4,7 +4,6 @@
 /// <reference path="../typings/XMPScript.d.ts"/>
 /// <reference path="../typings/extendscript.d.ts"/>
 /// <reference path="../typings/global.d.ts"/>
-import i18next from 'i18next';
 
 declare interface Track {
   overwriteClip(clipProjectItem: ProjectItem, time: Time): void;
