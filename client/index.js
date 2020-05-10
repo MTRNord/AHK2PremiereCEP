@@ -4,6 +4,7 @@ const loc = window.location.pathname;
 const dir = decodeURI(loc.substring(1, loc.lastIndexOf('/')));
 const express = require(dir + "/node_modules/express/index.js");
 const i18next = require(dir + "/node_modules/i18next/dist/cjs/i18next.js");
+const Backend = require(dir + "/node_modules/i18next-fs-backend/cjs/index.js");
 const i18nextMiddleware = require(dir + "/node_modules/i18next-http-middleware/cjs/index.js");
 
 // Swagger documentation, based on: http://www.acuriousanimal.com/2018/10/20/express-swagger-doc.html
@@ -27,17 +28,22 @@ const specs = swaggerJsDoc(options);
 function init() {
 
     // prepare languages
-    i18next.use(i18nextMiddleware.LanguageDetector).init({
-        // debug: true,
-        backend: {
-            // eslint-disable-next-line no-path-concat
-            loadPath: __dirname + '/locales/{{lng}}/{{ns}}.json',
-            // eslint-disable-next-line no-path-concat
-            addPath: __dirname + '/locales/{{lng}}/{{ns}}.missing.json'
-        },
-        fallbackLng: 'en',
-        preload: ['en', 'de']
-    })
+    i18next
+        .use(Backend)
+        .use(i18nextMiddleware.LanguageDetector)
+        .init({
+                debug: true,
+                backend: {
+                    // eslint-disable-next-line no-path-concat
+                    loadPath: dir + '/locales/{{lng}}/{{ns}}.json',
+                    // eslint-disable-next-line no-path-concat
+                    addPath: dir + '/locales/{{lng}}/{{ns}}.missing.json'
+                },
+                fallbackLng: 'de-DE',
+                preload: ['en', 'de-DE'],
+                saveMissing: true
+            }
+        )
 
     // Setup server
     const app = express();
@@ -99,7 +105,7 @@ function init() {
                 }
 
                 // Add dummy parameter
-                if (!(parameters.indexOf("translate") > -1)) {
+                if (!(parameters.indexOf("translate") > -1) && (["applyDropShadowPreset"].indexOf(key) > -1)) {
                     parameters.push("translate");
                 }
 
@@ -126,7 +132,7 @@ function init() {
     app.listen(SERVER_PORT);
 
     // Enable QE
-    if(ENABLE_QE) {
+    if (ENABLE_QE) {
         csInterface.evalScript("framework.enableQualityEngineering();")
     }
 
@@ -160,7 +166,7 @@ function executeCommand(command, params, res) {
     command += ");";
 
     console.log(command);
-    csInterface.evalScript("host." + command, function(functionResult) {
+    csInterface.evalScript("host." + command, function (functionResult) {
         res.json({message: 'ok.', result: functionResult});
     });
 }
